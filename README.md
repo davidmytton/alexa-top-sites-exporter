@@ -2,8 +2,6 @@
 
 This code exports sites from the Alexa Top Sites API into CSV format.
 
-## Usage Instructions
-
 ## Requirements
 
 macOS 10.15 with Python 3.7.6
