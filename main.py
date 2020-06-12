@@ -50,15 +50,17 @@ parser.add_argument('--test',
                           example-*.json files will be used instead.')
 args = parser.parse_args()
 
-fieldnames = ['URL', 'Reach per million', 'Page views per million']
+fieldnames = ['URL', 'Global rank', 'Reach per million', 'Page views per million']
 
 if args.awis_api_key:
     fieldnames.append('Online since')
     fieldnames.append('Adult')
     fieldnames.append('Category 1')
     fieldnames.append('Category 2')
-    fieldnames.append('UK Rank')
-    fieldnames.append('US Rank')
+    fieldnames.append('Top country')
+    fieldnames.append('Top country rank')
+    fieldnames.append('UK rank')
+    fieldnames.append('US rank')
     fieldnames.append('Description')
 
 
@@ -128,6 +130,7 @@ def write_csv(sites, writer):
     for site in sites['Ats']['Results']['Result']['Alexa']['TopSites']['Country']['Sites']['Site']:
         csv_line = {}
         csv_line['URL'] = site['DataUrl']
+        csv_line['Global rank'] = site['Global']['Rank']
         csv_line['Reach per million'] = site['Country']['Reach']['PerMillion']
         csv_line['Page views per million'] = site['Country']['PageViews']['PerMillion']
 
@@ -150,11 +153,32 @@ def write_csv(sites, writer):
                 elif isinstance(awis['Related']['Categories']['CategoryData'], dict):
                     csv_line['Category 1'] = awis['Related']['Categories']['CategoryData']['Title']
 
+            # We want to know how this site ranks in the UK and US
+            # and also which country it has the highest rank in
             for country in awis['TrafficData']['RankByCountry']['Country']:
+                # UK and US
                 if country['@Code'] == 'GB':
-                    csv_line['UK Rank'] = country['Rank']
+                    csv_line['UK rank'] = country['Rank']
                 elif country['@Code'] == 'US':
-                    csv_line['US Rank'] = country['Rank']
+                    csv_line['US rank'] = country['Rank']
+
+                # Which country it has the top rank in
+                if 'Top country' not in csv_line \
+                    and country['Rank'] is not None:
+                    csv_line['Top country'] = country['@Code']
+                    csv_line['Top country rank'] = country['Rank']
+                elif country['Rank'] \
+                    and 'Rank' in country \
+                    and country['Rank'] is not None \
+                    and int(country['Rank']) < int(csv_line['Top country rank']):
+                    csv_line['Top country'] = country['@Code']
+                    csv_line['Top country rank'] = country['Rank']
+
+            # Sometimes a site will be #1 in lots of markets and in that case, the loop
+            # will put the last country as the top country, but we want to override that
+            if 'US rank' in csv_line and \
+                csv_line['US rank'] == csv_line['Top country rank']:
+                csv_line['Top country'] = 'US'
 
             if 'Description' in awis['ContentData']['SiteData']:
                 csv_line['Description'] = awis['ContentData']['SiteData']['Description']
