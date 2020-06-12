@@ -35,8 +35,6 @@ import requests
 
 # Parse args
 parser = argparse.ArgumentParser()
-parser.add_argument('--country',
-                    help='Filter top sites by 2-letter country code e.g. US.')
 parser.add_argument('--results',
                     help='How many results to export.',
                     required=True)
@@ -45,6 +43,10 @@ parser.add_argument('--ats_api_key',
                     required=True)
 parser.add_argument('--awis_api_key',
                     help='Alexa AWIS Key from https://awis.alexa.com',)
+parser.add_argument('--country',
+                    help='Filter top sites by 2-letter country code e.g. US.')
+parser.add_argument('--start',
+                    help='Result to start from.')
 parser.add_argument('--test',
                     help='If specified, the Alexa API will not be called and the \
                           example-*.json files will be used instead.')
@@ -216,12 +218,16 @@ if not args.test:
 else:
     print('TEST MODE. Querying %d results from Alexa would cost $%s, would you like to continue (y/n)?' % (int(args.results), str(cost)))
 
-with open('top-sites.csv', 'w') as csvfile:
+with open('top-sites.csv', 'a') as csvfile:
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-    writer.writeheader()
 
-    # Start with the first result set
-    start = 1
+    # Normally start at 1 but if we need to resume, no point re-querying results
+    if not args.start:
+        start = 1
+        writer.writeheader()
+    else:
+        start = args.start
+        
     response = query_alexa_ats(args.results, start)
     total = write_csv(response, writer)
 
