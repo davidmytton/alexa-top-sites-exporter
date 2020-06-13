@@ -157,24 +157,25 @@ def write_csv(sites, writer):
 
             # We want to know how this site ranks in the UK and US
             # and also which country it has the highest rank in
-            for country in awis['TrafficData']['RankByCountry']['Country']:
-                # UK and US
-                if country['@Code'] == 'GB':
-                    csv_line['UK rank'] = country['Rank']
-                elif country['@Code'] == 'US':
-                    csv_line['US rank'] = country['Rank']
+            if 'RankByCountry' in awis['TrafficData']:
+                for country in awis['TrafficData']['RankByCountry']['Country']:
+                    # UK and US
+                    if country['@Code'] == 'GB':
+                        csv_line['UK rank'] = country['Rank']
+                    elif country['@Code'] == 'US':
+                        csv_line['US rank'] = country['Rank']
 
-                # Which country it has the top rank in
-                if 'Top country' not in csv_line \
-                    and country['Rank'] is not None:
-                    csv_line['Top country'] = country['@Code']
-                    csv_line['Top country rank'] = country['Rank']
-                elif country['Rank'] \
-                    and 'Rank' in country \
-                    and country['Rank'] is not None \
-                    and int(country['Rank']) < int(csv_line['Top country rank']):
-                    csv_line['Top country'] = country['@Code']
-                    csv_line['Top country rank'] = country['Rank']
+                    # Which country it has the top rank in
+                    if 'Top country' not in csv_line \
+                        and country['Rank'] is not None:
+                        csv_line['Top country'] = country['@Code']
+                        csv_line['Top country rank'] = country['Rank']
+                    elif country['Rank'] \
+                        and 'Rank' in country \
+                        and country['Rank'] is not None \
+                        and int(country['Rank']) < int(csv_line['Top country rank']):
+                        csv_line['Top country'] = country['@Code']
+                        csv_line['Top country rank'] = country['Rank']
 
             # Sometimes a site will be #1 in lots of markets and in that case, the loop
             # will put the last country as the top country, but we want to override that
