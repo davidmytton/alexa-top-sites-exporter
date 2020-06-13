@@ -48,4 +48,4 @@ If the script fails, you can use `--start` to resume from the last `TopSites` qu
 
 `Request: https://ats.api.alexa.com/api?Action=TopSites&ResponseGroup=Country&Start=1&Count=5&Output=json`
 
-means the API was queries for 5 results starting at result 1. If youy wanted to query another set of results starting from the next result, you would add the argument `--start 6`.
+means the API was queried for 5 results starting at result 1. If you wanted to query another set of results starting from the next result, you would add the argument `--start 6`.
