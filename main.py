@@ -157,7 +157,7 @@ def write_csv(sites, writer):
 
             # We want to know how this site ranks in the UK and US
             # and also which country it has the highest rank in
-            if 'RankByCountry' in awis['TrafficData']:
+            if 'RankByCountry' in awis['TrafficData'] and awis['TrafficData']['RankByCountry'] is not None:
                 for country in awis['TrafficData']['RankByCountry']['Country']:
                     # UK and US
                     if country['@Code'] == 'GB':
@@ -236,7 +236,7 @@ with open('top-sites.csv', 'a') as csvfile:
     # then we need to make repeated requests to the Alexa API, incrementing
     # the start result each time
     while total < int(args.results):
-        start = total + 1
+        start = start + total + 1
         response = query_alexa_ats(args.results, start)
         total = total + write_csv(response, writer)
 
