@@ -141,10 +141,12 @@ def write_csv(sites, writer):
 
             awis = query_alexa_awis(site['DataUrl'])
 
-            if 'OnlineSince' in awis['ContentData']['SiteData']:
-                csv_line['Online since'] = awis['ContentData']['SiteData']['OnlineSince']
+            if 'ContentData' in awis:
+                if 'OnlineSince' in awis['ContentData']['SiteData']:
+                    csv_line['Online since'] = awis['ContentData']['SiteData']['OnlineSince']
 
-            csv_line['Adult'] = awis['ContentData']['AdultContent']
+                if 'AdultContent' in awis['ContentData']:
+                    csv_line['Adult'] = awis['ContentData']['AdultContent']
 
             if 'Categories' in awis['Related'] and 'CategoryData' in awis['Related']['Categories']:
                 if isinstance(awis['Related']['Categories']['CategoryData'], list):
@@ -158,24 +160,28 @@ def write_csv(sites, writer):
             # We want to know how this site ranks in the UK and US
             # and also which country it has the highest rank in
             if 'RankByCountry' in awis['TrafficData'] and awis['TrafficData']['RankByCountry'] is not None:
-                for country in awis['TrafficData']['RankByCountry']['Country']:
-                    # UK and US
-                    if country['@Code'] == 'GB':
-                        csv_line['UK rank'] = country['Rank']
-                    elif country['@Code'] == 'US':
-                        csv_line['US rank'] = country['Rank']
+                if isinstance(awis['TrafficData']['RankByCountry']['Country'], tuple):
+                    for country in awis['TrafficData']['RankByCountry']['Country']:
+                        # UK and US
+                        if country['@Code'] == 'GB':
+                            csv_line['UK rank'] = country['Rank']
+                        elif country['@Code'] == 'US':
+                            csv_line['US rank'] = country['Rank']
 
-                    # Which country it has the top rank in
-                    if 'Top country' not in csv_line \
-                        and country['Rank'] is not None:
-                        csv_line['Top country'] = country['@Code']
-                        csv_line['Top country rank'] = country['Rank']
-                    elif country['Rank'] \
-                        and 'Rank' in country \
-                        and country['Rank'] is not None \
-                        and int(country['Rank']) < int(csv_line['Top country rank']):
-                        csv_line['Top country'] = country['@Code']
-                        csv_line['Top country rank'] = country['Rank']
+                        # Which country it has the top rank in
+                        if 'Top country' not in csv_line \
+                            and country['Rank'] is not None:
+                            csv_line['Top country'] = country['@Code']
+                            csv_line['Top country rank'] = country['Rank']
+                        elif country['Rank'] \
+                            and 'Rank' in country \
+                            and country['Rank'] is not None \
+                            and int(country['Rank']) < int(csv_line['Top country rank']):
+                            csv_line['Top country'] = country['@Code']
+                            csv_line['Top country rank'] = country['Rank']
+                    else:
+                        csv_line['Top country'] = awis['TrafficData']['RankByCountry']['Country']['@Code']
+                        csv_line['Top country rank'] = awis['TrafficData']['RankByCountry']['Country']['Rank']
 
             # Sometimes a site will be #1 in lots of markets and in that case, the loop
             # will put the last country as the top country, but we want to override that
@@ -225,18 +231,20 @@ with open('top-sites.csv', 'a') as csvfile:
     # Normally start at 1 but if we need to resume, no point re-querying results
     if not args.start:
         start = 1
+        total = 0
         writer.writeheader()
     else:
         start = args.start
+        total = int(start)
         
     response = query_alexa_ats(args.results, start)
-    total = write_csv(response, writer)
+    total = total + write_csv(response, writer)
 
     # If the total results returned is less than the number we want
     # then we need to make repeated requests to the Alexa API, incrementing
     # the start result each time
     while total < int(args.results):
-        start = start + total + 1
+        start = total + 1
         response = query_alexa_ats(args.results, start)
         total = total + write_csv(response, writer)
 
