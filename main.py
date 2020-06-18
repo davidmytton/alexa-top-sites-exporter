@@ -28,7 +28,7 @@ import argparse
 import csv
 import json
 import sys
-from collections import Iterable
+from collections.abc import Iterable
 
 # 3rd party
 import boto3
