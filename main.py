@@ -161,7 +161,7 @@ def write_csv(sites, writer):
             # We want to know how this site ranks in the UK and US
             # and also which country it has the highest rank in
             if 'RankByCountry' in awis['TrafficData'] and awis['TrafficData']['RankByCountry'] is not None:
-                if isinstance(awis['TrafficData']['RankByCountry']['Country'], Iterable):
+                try:
                     for country in awis['TrafficData']['RankByCountry']['Country']:
                         # UK and US
                         if country['@Code'] == 'GB':
@@ -180,7 +180,7 @@ def write_csv(sites, writer):
                             and int(country['Rank']) < int(csv_line['Top country rank']):
                             csv_line['Top country'] = country['@Code']
                             csv_line['Top country rank'] = country['Rank']
-                else:
+                except TypeError:
                     csv_line['Top country'] = awis['TrafficData']['RankByCountry']['Country']['@Code']
                     csv_line['Top country rank'] = awis['TrafficData']['RankByCountry']['Country']['Rank']
 

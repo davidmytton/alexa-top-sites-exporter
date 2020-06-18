@@ -13,7 +13,7 @@ macOS 10.15 with Python 3.7.6
 3. Execute: `source venv/bin/activate`
 4. Execute: `pip3 install -r requirements.txt`
 
-## Usage
+## Usage - main
 
 ```
 usage: main.py [-h] --results RESULTS --ats_api_key ATS_API_KEY
@@ -49,3 +49,16 @@ If the script fails, you can use `--start` to resume from the last `TopSites` qu
 `Request: https://ats.api.alexa.com/api?Action=TopSites&ResponseGroup=Country&Start=1&Count=5&Output=json`
 
 means the API was queried for 5 results starting at result 1. If you wanted to query another set of results starting from the next result, you would add the argument `--start 6`.
+
+## Usage - awis-lookup
+
+Provide a CSV of URLs in `awis-input.csv`, one per line, and it will look up the AWIS ranking and write to another CSV `awis-results.py`.
+
+```
+usage: awis-lookup.py [-h] --awis_api_key AWIS_API_KEY
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --awis_api_key AWIS_API_KEY
+                        Alexa AWIS Key from https://awis.alexa.com
+```
