@@ -28,6 +28,7 @@ import argparse
 import csv
 import json
 import sys
+from collections import Iterable
 
 # 3rd party
 import boto3
@@ -160,7 +161,7 @@ def write_csv(sites, writer):
             # We want to know how this site ranks in the UK and US
             # and also which country it has the highest rank in
             if 'RankByCountry' in awis['TrafficData'] and awis['TrafficData']['RankByCountry'] is not None:
-                if isinstance(awis['TrafficData']['RankByCountry']['Country'], tuple):
+                if isinstance(awis['TrafficData']['RankByCountry']['Country'], Iterable):
                     for country in awis['TrafficData']['RankByCountry']['Country']:
                         # UK and US
                         if country['@Code'] == 'GB':
@@ -179,9 +180,9 @@ def write_csv(sites, writer):
                             and int(country['Rank']) < int(csv_line['Top country rank']):
                             csv_line['Top country'] = country['@Code']
                             csv_line['Top country rank'] = country['Rank']
-                    else:
-                        csv_line['Top country'] = awis['TrafficData']['RankByCountry']['Country']['@Code']
-                        csv_line['Top country rank'] = awis['TrafficData']['RankByCountry']['Country']['Rank']
+                else:
+                    csv_line['Top country'] = awis['TrafficData']['RankByCountry']['Country']['@Code']
+                    csv_line['Top country rank'] = awis['TrafficData']['RankByCountry']['Country']['Rank']
 
             # Sometimes a site will be #1 in lots of markets and in that case, the loop
             # will put the last country as the top country, but we want to override that
